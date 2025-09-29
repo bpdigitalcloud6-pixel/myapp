@@ -1,30 +1,38 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:myapp/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('App starts, displays initial tasks, and allows adding a new one',
+      (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verify that the app bar title is correct.
+    expect(find.text('To-Do List'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Verify that the initial tasks from the provider are displayed.
+    expect(find.byType(ListTile), findsNWidgets(3)); // 3 initial tasks
+    expect(find.text('Design the app logo'), findsOneWidget);
+    expect(find.text('Create a wireframe for the main screen'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Tap the floating action button to open the add task dialog.
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle(); // Wait for the dialog to appear
+
+    // Verify the dialog is open.
+    expect(find.text('Add New Task'), findsOneWidget);
+
+    // Enter a new task title.
+    await tester.enterText(find.byType(TextField), 'Write a widget test');
+
+    // Tap the 'Add' button.
+    await tester.tap(find.text('Add'));
+    await tester
+        .pumpAndSettle(); // Wait for the dialog to close and UI to update
+
+    // Verify the new task is now in the list.
+    expect(find.byType(ListTile), findsNWidgets(4));
+    expect(find.text('Write a widget test'), findsOneWidget);
   });
 }
